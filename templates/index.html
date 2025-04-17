@@ -3,43 +3,266 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JSON Compare</title>
+    <title>JSONify - Advanced JSON Comparison Tool</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-    <div class="container mt-5">
-        <h1 class="text-center mb-4">JSON Compare</h1>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#"><i class="fas fa-code"></i> JSONify</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#"><i class="fas fa-exchange-alt"></i> Compare</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="formatBtn"><i class="fas fa-indent"></i> Format JSON</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="validateBtn"><i class="fas fa-check-circle"></i> Validate</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="themeDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-paint-brush"></i> Theme
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#" data-theme="light">Light</a></li>
+                            <li><a class="dropdown-item" href="#" data-theme="dark">Dark</a></li>
+                            <li><a class="dropdown-item" href="#" data-theme="blue">Blue</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card intro-card">
+                    <div class="card-body">
+                        <h1 class="card-title"><i class="fas fa-code"></i> JSON Comparison Tool</h1>
+                        <p class="card-text">Upload two JSON files to see the differences, or paste JSON content directly.</p>
+                        <div class="d-flex justify-content-end">
+                            <button id="helpBtn" class="btn btn-sm btn-outline-primary"><i class="fas fa-question-circle"></i> How to use</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row comparison-container">
+            <div class="col-md-6">
+                <div class="card json-card">
+                    <div class="card-header">
+                        <h5 class="mb-0 d-flex align-items-center">
+                            <span>JSON 1</span>
+                            <div class="btn-group ms-auto">
+                                <button class="btn btn-sm btn-outline-secondary file-upload-btn">
+                                    <i class="fas fa-upload"></i> Upload
+                                    <input type="file" class="file-input" id="file1" accept=".json">
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary" id="pasteBtn1"><i class="fas fa-paste"></i> Paste</button>
+                                <button class="btn btn-sm btn-outline-secondary" id="clearBtn1"><i class="fas fa-trash-alt"></i> Clear</button>
+                            </div>
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <textarea id="jsonTextarea1" class="form-control json-textarea" rows="15" placeholder="Paste or upload JSON content..."></textarea>
+                        </div>
+                        <pre id="json1" class="mt-3 json-display d-none"></pre>
+                        <div id="jsonTree1" class="json-tree mt-3"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card json-card">
+                    <div class="card-header">
+                        <h5 class="mb-0 d-flex align-items-center">
+                            <span>JSON 2</span>
+                            <div class="btn-group ms-auto">
+                                <button class="btn btn-sm btn-outline-secondary file-upload-btn">
+                                    <i class="fas fa-upload"></i> Upload
+                                    <input type="file" class="file-input" id="file2" accept=".json">
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary" id="pasteBtn2"><i class="fas fa-paste"></i> Paste</button>
+                                <button class="btn btn-sm btn-outline-secondary" id="clearBtn2"><i class="fas fa-trash-alt"></i> Clear</button>
+                            </div>
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <textarea id="jsonTextarea2" class="form-control json-textarea" rows="15" placeholder="Paste or upload JSON content..."></textarea>
+                        </div>
+                        <pre id="json2" class="mt-3 json-display d-none"></pre>
+                        <div id="jsonTree2" class="json-tree mt-3"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center my-4">
+            <div class="btn-group">
+                <button class="btn btn-primary btn-lg" id="compareBtn">
+                    <i class="fas fa-exchange-alt"></i> Compare Files
+                </button>
+                <button class="btn btn-outline-primary btn-lg" id="viewModeBtn">
+                    <i class="fas fa-list"></i> Toggle View Mode
+                </button>
+                <button class="btn btn-outline-primary btn-lg" id="exportBtn">
+                    <i class="fas fa-download"></i> Export Diff
+                </button>
+            </div>
+        </div>
+
         <div class="row">
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">File 1</h5>
-                        <input type="file" class="form-control" id="file1" accept=".json">
-                        <pre id="json1" class="mt-3 json-display"></pre>
+            <div class="col-12">
+                <div class="card diff-card">
+                    <div class="card-header">
+                        <h5 class="mb-0 d-flex align-items-center">
+                            <i class="fas fa-exchange-alt me-2"></i> Differences
+                            <div class="ms-auto">
+                                <div class="btn-group">
+                                    <button class="btn btn-sm btn-outline-secondary active" id="diffViewUnified">Unified</button>
+                                    <button class="btn btn-sm btn-outline-secondary" id="diffViewSplit">Split</button>
+                                    <button class="btn btn-sm btn-outline-secondary" id="diffViewTree">Tree</button>
+                                </div>
+                            </div>
+                        </h5>
                     </div>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="card">
                     <div class="card-body">
-                        <h5 class="card-title">File 2</h5>
-                        <input type="file" class="form-control" id="file2" accept=".json">
-                        <pre id="json2" class="mt-3 json-display"></pre>
+                        <div id="diffResult" class="diff-display"></div>
+                        <div id="diffTreeView" class="diff-tree-view d-none"></div>
+                        <div id="diffSplitView" class="diff-split-view d-none row">
+                            <div class="col-6" id="diffLeft"></div>
+                            <div class="col-6" id="diffRight"></div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="text-center mt-4">
-            <button class="btn btn-primary" id="compareBtn">Compare Files</button>
-        </div>
-        <div class="mt-4">
-            <h3>Differences</h3>
-            <div id="diffResult" class="diff-display"></div>
+
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i> JSON Statistics</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>JSON 1</h6>
+                                <ul class="list-group" id="json1Stats">
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Size
+                                        <span class="badge bg-primary rounded-pill" id="json1Size">-</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Properties
+                                        <span class="badge bg-primary rounded-pill" id="json1Props">-</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Depth
+                                        <span class="badge bg-primary rounded-pill" id="json1Depth">-</span>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>JSON 2</h6>
+                                <ul class="list-group" id="json2Stats">
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Size
+                                        <span class="badge bg-primary rounded-pill" id="json2Size">-</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Properties
+                                        <span class="badge bg-primary rounded-pill" id="json2Props">-</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Depth
+                                        <span class="badge bg-primary rounded-pill" id="json2Depth">-</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
+    <!-- Help Modal -->
+    <div class="modal fade" id="helpModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-question-circle"></i> How to Use JSONify</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <h6>Comparing JSON Files</h6>
+                    <ol>
+                        <li>Upload or paste JSON content in both panels</li>
+                        <li>Click the "Compare Files" button to see differences</li>
+                        <li>Use the view mode buttons to change how differences are displayed</li>
+                    </ol>
+                    
+                    <h6>Features</h6>
+                    <ul>
+                        <li><strong>Format JSON</strong> - Prettify your JSON content</li>
+                        <li><strong>Validate</strong> - Check if your JSON is valid</li>
+                        <li><strong>Toggle View</strong> - Switch between text and tree view</li>
+                        <li><strong>Export Diff</strong> - Download the comparison results</li>
+                        <li><strong>Theme</strong> - Change the application's appearance</li>
+                    </ul>
+                    
+                    <h6>Diff View Modes</h6>
+                    <ul>
+                        <li><strong>Unified</strong> - Shows changes in a single view with additions and removals</li>
+                        <li><strong>Split</strong> - Side by side comparison</li>
+                        <li><strong>Tree</strong> - Hierarchical view of changes</li>
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Got it!</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Paste Modal -->
+    <div class="modal fade" id="pasteModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-paste"></i> Paste JSON Content</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <textarea id="pasteModalTextarea" class="form-control" rows="15" placeholder="Paste JSON content here..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="pasteModalSubmit">Use This JSON</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="mt-5 mb-3 text-center text-muted">
+        <p>JSONify - Advanced JSON Comparison Tool &copy; 2025</p>
+    </footer>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
-</html> 
+</html>
